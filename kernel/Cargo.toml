@@ -1,0 +1,16 @@
+[package]
+name = "kernel"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+limine = "0.3.1"
+spin = "0.9.8"
+bitflags = "2.4.0"
+lazy_static = { version = "1.5.0", features = ["spin", "spin_no_std"] }
+
+[[bin]]
+name = "kernel"
+path = "src/main.rs"
+test = false
+bench = false

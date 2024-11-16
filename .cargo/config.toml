@@ -1,0 +1,13 @@
+[build]
+target = "x86_64-kernel"
+target-dir = "build/target"
+
+[unstable]
+build-std = ["core", "compiler_builtins", "alloc"]
+build-std-features = ["compiler-builtins-mem"]
+
+[env]
+RUST_TARGET_PATH = { value = "kernel", relative = true }
+
+[target.x86_64-kernel]
+runner = "scripts/run.sh"

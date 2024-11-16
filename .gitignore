@@ -1,0 +1,52 @@
+# Build output directories
+/build/
+/target/
+**/*.rs.bk
+
+# Generated files
+*.o
+*.bin
+*.iso
+*.img
+*.elf
+*.efi
+*.log
+qemu.log
+
+# Rust specific
+Cargo.lock
+
+# Editor/IDE specific
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS specific
+.DS_Store
+.directory
+.Trash-*
+Thumbs.db
+
+# Debug files
+*.pdb
+*.sym
+
+# Bootloader files
+/build/limine/
+**/limine-bios*
+**/limine-uefi*
+**/BOOT*.EFI
+
+# Environment
+.env
+.env.local
+.envrc
+
+# Backup files
+*.bak
+*.backup
+*.tmp
