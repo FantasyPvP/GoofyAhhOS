@@ -5,7 +5,6 @@ members = [
 resolver = "2"
 
 [profile.dev]
-panic = "abort"
 opt-level = "z"
 debug = true
 debug-assertions = true
@@ -15,7 +14,6 @@ incremental = false
 codegen-units = 1
 
 [profile.release]
-panic = "abort"
 opt-level = "z"
 debug = false
 debug-assertions = false

@@ -1,40 +1,45 @@
 #![no_std] // Don't link the Rust standard library
 #![no_main] // Disable all Rust-level entry points
+#![feature(custom_test_frameworks)]
+#![test_runner(GoofyAhhOS::tests::test_runner)]
+#![reexport_test_harness_main = "test_main"]
 
-use core::panic::PanicInfo;
 use limine::*;
 
-use limine::request::{
-    FramebufferRequest, RequestsEndMarker, RequestsStartMarker,
-};
-
-mod font;
-mod render;
-
-use crate::font::FONT;
+use GoofyAhhOS::sys::kernel::drivers::serial::serial_read;
+use GoofyAhhOS::{print, println, serial_println};
+use GoofyAhhOS::sys::kernel::drivers::framebuffer::textwriter::clear_screen;
 
 // Set the base revision
 static BASE_REVISION: BaseRevision = BaseRevision::new();
 
-
-// Halt and catch fire function
-fn hcf() -> ! {
-    loop {
-        unsafe { core::arch::asm!("cli; hlt") }
-    }
-}
-
-// Called on panic
-#[panic_handler]
-fn panic(_info: &PanicInfo) -> ! {
-    hcf()
-}
-
 // Kernel entry point
 #[no_mangle]
 pub extern "C" fn kmain() -> ! {
-    render::init();
-    render::write_string("Welcome to GoofyAhhOS!\nthis is the superior os\nif you disagree you are a heretic in the name of steven.", 0xff0000, 0);
 
-    hcf()
+    GoofyAhhOS::init();
+
+    println!("Hello from GoofyAhhOS!");
+    serial_println!("SERIAL OUT ACHIEVED :check:");
+
+    loop {
+        let input: &str = serial_read();
+
+        clear_screen();
+
+        if input.starts_with("print ") {
+            let input = &input[6..];
+            println!("{}", input);
+        } else if input == "" {
+            let x: i32 = 239423889;
+            let y: i32 = 123456678;
+
+            print!("num: {} {}", x, y);
+        } else {
+            println!("Unknown command: {}", input);
+        }
+    }
+
+    GoofyAhhOS::hcf()
 }
+

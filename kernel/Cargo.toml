@@ -1,16 +1,23 @@
 [package]
 name = "kernel"
-version.workspace = true
-edition.workspace = true
+version = "0.1.0"
+edition = "2021"
 
 [dependencies]
 limine = "0.3.1"
-spin = "0.9.8"
-bitflags = "2.4.0"
-lazy_static = { version = "1.5.0", features = ["spin", "spin_no_std"] }
+spin = { version = "0.9.8", features = ["lazy"] }
+bitflags = { version = "2.4.0", default-features = false }
+lazy_static = { version = "1.5.0", features = ["spin_no_std"] }
+x86_64 = { version = "0.15.1" }
+
+[features]
+default = []
 
 [[bin]]
 name = "kernel"
 path = "src/main.rs"
-test = false
-bench = false
+
+# setup lib.rs
+[lib]
+name = "GoofyAhhOS"
+path = "src/lib.rs"
