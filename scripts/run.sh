@@ -127,7 +127,8 @@ if [ $is_test -eq 1 ]; then
     serial_flags="-serial stdio"
 else
     test_flags=""
-    serial_flags="-serial tcp:127.0.0.1:1234,server,nowait"
+    # serial_flags="-serial tcp:127.0.0.1:1234,server,nowait"
+    serial_flags="-serial stdio"
 fi
 
 # Run in QEMU
@@ -139,7 +140,25 @@ else
     info "Running OS in QEMU..."
 fi
 
-echo "test: " $is_test
+check_test_res() {
+    qemu_exit_code=$?
+    if [ $qemu_exit_code -eq 33 ]; then
+        # Success case (0x10 << 1) | 1 = 33
+        info "All tests passed"
+        exit 0
+    elif [ $qemu_exit_code -eq 35 ]; then
+        # Failure case (0x11 << 1) | 1 = 35
+        warning "Some tests failed"
+        exit 1
+    else
+        # Any other exit code is treated as a failure
+        warning "Some tests failed"
+        exit 1
+    fi
+}
+
+
+trap 'check_test_res "tests completed"' ERR
  
 cd "$project_root"
 qemu-system-x86_64 -M q35 \
@@ -152,23 +171,3 @@ qemu-system-x86_64 -M q35 \
     ${test_flags} \
     ${debug_flags} \
     ${QEMU_FLAGS:-}
-
-# Get QEMU's exit code
-qemu_exit_code=$?
-
-# If this is a test run, translate QEMU exit codes to test exit codes
-if [ $is_test -eq 1 ]; then
-    if [ $qemu_exit_code -eq 33 ]; then
-        # Success case (0x10 << 1) | 1 = 33
-        exit 0
-    elif [ $qemu_exit_code -eq 35 ]; then
-        # Failure case (0x11 << 1) | 1 = 35
-        exit 1
-    else
-        # Any other exit code is treated as a failure
-        exit 1
-    fi
-else
-    # For non-test runs, pass through the exit code
-    exit $qemu_exit_code
-fi

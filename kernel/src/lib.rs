@@ -28,7 +28,7 @@ pub use sys::kernel::drivers::serial::{
 };
 
 pub fn init() {
-    sys::kernel::cpu::interrupts::init();
+    sys::kernel::cpu::init();
 }
 
 pub fn hcf() -> ! {

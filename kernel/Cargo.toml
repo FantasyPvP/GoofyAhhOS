@@ -9,6 +9,7 @@ spin = { version = "0.9.8", features = ["lazy"] }
 bitflags = { version = "2.4.0", default-features = false }
 lazy_static = { version = "1.5.0", features = ["spin_no_std"] }
 x86_64 = { version = "0.15.1" }
+pic8259 = "0.11.0"
 
 [features]
 default = []

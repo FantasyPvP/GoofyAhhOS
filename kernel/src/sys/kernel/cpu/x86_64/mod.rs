@@ -1,4 +1,9 @@
 pub mod interrupts;
+pub mod gdt;
+
 mod pics;
 
-pub use interrupts::*;
+pub fn init() {
+    gdt::init();
+    interrupts::init();
+}
