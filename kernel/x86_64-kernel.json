@@ -16,7 +16,7 @@
   "code-model": "kernel",
   "pre-link-args": {
     "ld.lld": [
-      "--script=/home/fantasypvp/Projects/OSDev/GoofyAhhOS/kernel/linker.ld",
+      "--script=kernel/linker.ld",
       "-nostdlib",
       "--no-dynamic-linker",
       "-static",

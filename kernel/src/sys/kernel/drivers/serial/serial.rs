@@ -1,19 +1,19 @@
-use core::fmt;
+use core::{fmt, sync::atomic::{AtomicUsize, Ordering}};
 use spin::Mutex;
 use lazy_static::lazy_static;
 
 use crate::sys::kernel::cpu::{inb, outb};
+use crate::sys::kernel::cpu::x86_64::interrupts;
 
 static PORT: u16 = 0x3f8;
 static mut BUFFER: [u8; 256] = [0; 256];
+static BUFFER_LEN: AtomicUsize = AtomicUsize::new(0);
 
 lazy_static!{
     static ref SERIAL_WRITER: Mutex<SerialWriter> = Mutex::new(SerialWriter::new());
 }
 
-struct SerialWriter {
-    buffer_len: usize
-}
+struct SerialWriter;
 
 impl fmt::Write for SerialWriter {
     fn write_str(&mut self, s: &str) -> fmt::Result {
@@ -45,9 +45,7 @@ impl SerialWriter {
             outb(PORT + 4, 0x0F);
         }
 
-        SerialWriter {
-            buffer_len: 0
-        }
+        SerialWriter
     }
 
     // returnstrue if there is new data on the serial port
@@ -68,15 +66,15 @@ impl SerialWriter {
     pub fn read_str_to_buffer(&mut self) { unsafe {
         while !self.serial_recieved() {};
 
-        self.buffer_len = 0;
+        BUFFER_LEN.store(0, Ordering::SeqCst);
 
-        while self.serial_recieved() && self.buffer_len < 256 {
+        while self.serial_recieved() && BUFFER_LEN.load(Ordering::SeqCst) < 256 {
             let c = inb(PORT + 0);
-            BUFFER[self.buffer_len] = c;
+            BUFFER[BUFFER_LEN.load(Ordering::SeqCst)] = c;
             if c == b'\n' {
                 break;
             }
-            self.buffer_len += 1;
+            BUFFER_LEN.fetch_add(1, Ordering::SeqCst);
         }
     }}
 
@@ -89,19 +87,31 @@ impl SerialWriter {
 pub fn _serial_write(args: fmt::Arguments) {
     use core::fmt::Write;
 
-    SERIAL_WRITER.lock().write_fmt(args).unwrap();
+    interrupts::without(|| {
+        SERIAL_WRITER.lock().write_fmt(args).unwrap();
+    })    
+}
+
+#[macro_use]
+#[macro_export]
+macro_rules! serial_println {
+    () => ($crate::serial_print!("\n"));
+    ($($arg:tt)*) => ($crate::serial_print!("{}\n", format_args!($($arg)*)));
 }
 
 pub fn serial_read() -> &'static str {
-    SERIAL_WRITER.lock().read_str_to_buffer();
-    let i = SERIAL_WRITER.lock().buffer_len;
-    
-    if i == 0 {
-        return "";
-    }
+    serial_println!("getting value!");
 
-    unsafe {
-        return core::str::from_utf8(&BUFFER[..i - 1]).unwrap();
+    interrupts::without(|| {
+        SERIAL_WRITER.lock().read_str_to_buffer();
+    });
+
+    let i = BUFFER_LEN.load(Ordering::SeqCst);
+
+    return unsafe {
+        if i != 0 {
+            core::str::from_utf8(&BUFFER[..i - 1]).unwrap()
+        } else { "" }
     }
 }
 
@@ -110,8 +120,3 @@ macro_rules! serial_print {
     ($($arg:tt)*) => ($crate::_serial_write(format_args!($($arg)*)));
 }
 
-#[macro_export]
-macro_rules! serial_println {
-    () => ($crate::serial_print!("\n"));
-    ($($arg:tt)*) => ($crate::serial_print!("{}\n", format_args!($($arg)*)));
-}

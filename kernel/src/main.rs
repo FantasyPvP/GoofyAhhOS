@@ -20,7 +20,9 @@ pub extern "C" fn kmain() -> ! {
     GoofyAhhOS::init();
 
     println!("Hello from GoofyAhhOS!");
-    serial_println!("SERIAL OUT ACHIEVED :check:");
+    // serial_println!("SERIAL OUT ACHIEVED :check:");
+
+    loop {}
 
     loop {
         let input: &str = serial_read();

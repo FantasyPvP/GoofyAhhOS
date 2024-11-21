@@ -4,7 +4,7 @@ use core::fmt;
 use lazy_static::lazy_static;
 use spin::Mutex;
 
-use crate::sys::kernel::cpu::interrupts;
+use crate::sys::kernel::cpu::x86_64::interrupts;
 
 use super::{font::FONT, render::FRAMEBUFFER_WRITER};
 
@@ -125,7 +125,7 @@ impl core::fmt::Write for TextWriter {
 fn write(args: fmt::Arguments, fg_color: u32, bg_color: u32) {
     use core::fmt::Write;
 
-    interrupts::disable(|| {
+    interrupts::without(|| {
         let mut writer = TEXT_WRITER.lock();
         writer.set_colour((fg_color, bg_color));
         writer.write_fmt(args).unwrap();
@@ -146,13 +146,15 @@ pub fn _log(args: fmt::Arguments) {
 }
 
 pub fn clear_screen() {
-    let mut writer = TEXT_WRITER.lock();
-    writer.text_line = 0;
-    writer.text_col = 0;
-
-    if let Some(writer) = FRAMEBUFFER_WRITER.lock().as_mut() {
-        writer.clear();
-    }
+    interrupts::without(|| {
+        let mut writer = TEXT_WRITER.lock();
+        writer.text_line = 0;
+        writer.text_col = 0;
+    
+        if let Some(writer) = FRAMEBUFFER_WRITER.lock().as_mut() {
+            writer.clear();
+        }
+    });    
 }
 
 #[macro_export]

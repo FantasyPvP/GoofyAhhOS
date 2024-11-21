@@ -127,7 +127,7 @@ if [ $is_test -eq 1 ]; then
     serial_flags="-serial stdio"
 else
     test_flags=""
-    # serial_flags="-serial tcp:127.0.0.1:1234,server,nowait"
+    # serial_flags="-serial tcp:127.0.0.1:1234,server -monitor telnet:127.0.0.1:1235,server"
     serial_flags="-serial stdio"
 fi
 
@@ -158,6 +158,8 @@ check_test_res() {
 }
 
 
+kvm_flag=""
+
 trap 'check_test_res "tests completed"' ERR
  
 cd "$project_root"
@@ -171,3 +173,4 @@ qemu-system-x86_64 -M q35 \
     ${test_flags} \
     ${debug_flags} \
     ${QEMU_FLAGS:-}
+
