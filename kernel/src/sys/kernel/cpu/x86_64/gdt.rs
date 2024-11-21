@@ -46,8 +46,8 @@ lazy_static! {
             Selectors {
                 code_selector,
                 data_selector,
-                // user_code_selector,
-                // user_data_selector,
+                user_code_selector,
+                user_data_selector,
                 tss_selector,
             }
         )
@@ -57,8 +57,8 @@ lazy_static! {
 struct Selectors {
     code_selector: SegmentSelector,
     data_selector: SegmentSelector,
-    // user_code_selector: SegmentSelector,
-    // user_data_selector: SegmentSelector,
+    user_code_selector: SegmentSelector,
+    user_data_selector: SegmentSelector,
     tss_selector: SegmentSelector,
 }
 
@@ -72,8 +72,8 @@ pub fn init() {
         load_tss(GDT.1.tss_selector);
         
         // // Set up data segments
-        // DS::set_reg(GDT.1.data_selector);
-        // ES::set_reg(GDT.1.data_selector);
+        DS::set_reg(GDT.1.data_selector);
+        ES::set_reg(GDT.1.data_selector);
         SS::set_reg(GDT.1.data_selector);
     }
 }
